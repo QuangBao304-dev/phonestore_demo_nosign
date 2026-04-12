@@ -1,0 +1,111 @@
+-- ==========================================
+-- THIẾT KẾ DATABASE WEBSITE BÁN ĐIỆN THOẠI
+-- ==========================================
+
+-- 1. BẢNG PHÂN QUYỀN (VAI_TRO)
+CREATE TABLE Vai_Tro (
+    ma_vai_tro INT AUTO_INCREMENT PRIMARY KEY,
+    ten_vai_tro VARCHAR(50) NOT NULL -- 'KhachHang', 'NhanVien', 'QuanTriVien'
+);
+
+-- 2. BẢNG NGƯỜI DÙNG (NGUOI_DUNG)
+CREATE TABLE Nguoi_Dung (
+    ma_nguoi_dung INT AUTO_INCREMENT PRIMARY KEY,
+    ma_vai_tro INT NOT NULL,
+    ten_dang_nhap VARCHAR(50) UNIQUE NOT NULL,
+    mat_khau VARCHAR(255) NOT NULL,
+    ho_va_ten VARCHAR(100) NOT NULL,
+    email VARCHAR(100) UNIQUE,
+    so_dien_thoai VARCHAR(20),
+    dia_chi VARCHAR(255),
+    trang_thai TINYINT DEFAULT 1, -- 1: Hoạt động, 0: Bị khóa
+    ngay_tao DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (ma_vai_tro) REFERENCES Vai_Tro(ma_vai_tro)
+);
+
+-- 3. BẢNG DANH MỤC SẢN PHẨM (DANH_MUC)
+CREATE TABLE Danh_Muc (
+    ma_danh_muc INT AUTO_INCREMENT PRIMARY KEY,
+    ten_danh_muc VARCHAR(100) NOT NULL,
+    mo_ta TEXT
+);
+
+-- 4. BẢNG SẢN PHẨM (SAN_PHAM)
+CREATE TABLE San_Pham (
+    ma_san_pham INT AUTO_INCREMENT PRIMARY KEY,
+    ma_danh_muc INT NOT NULL,
+    ten_san_pham VARCHAR(200) NOT NULL,
+    mo_ta_chi_tiet TEXT,
+    gia_ban DECIMAL(15, 2) NOT NULL,
+    so_luong_ton INT NOT NULL DEFAULT 0,
+    duong_dan_anh VARCHAR(255),
+    ngay_them DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (ma_danh_muc) REFERENCES Danh_Muc(ma_danh_muc)
+);
+
+-- 5. BẢNG GIỎ HÀNG (GIO_HANG)
+CREATE TABLE Gio_Hang (
+    ma_gio_hang INT AUTO_INCREMENT PRIMARY KEY,
+    ma_nguoi_dung INT NULL, -- NULL nếu là khách vãng lai
+    ma_phien_khach VARCHAR(255) NULL, -- Session ID dùng cho khách vãng lai
+    ngay_tao DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (ma_nguoi_dung) REFERENCES Nguoi_Dung(ma_nguoi_dung)
+);
+
+-- 6. BẢNG CHI TIẾT GIỎ HÀNG (CHI_TIET_GIO_HANG)
+CREATE TABLE Chi_Tiet_Gio_Hang (
+    ma_chi_tiet_gio INT AUTO_INCREMENT PRIMARY KEY,
+    ma_gio_hang INT NOT NULL,
+    ma_san_pham INT NOT NULL,
+    so_luong INT NOT NULL DEFAULT 1,
+    FOREIGN KEY (ma_gio_hang) REFERENCES Gio_Hang(ma_gio_hang),
+    FOREIGN KEY (ma_san_pham) REFERENCES San_Pham(ma_san_pham)
+);
+
+-- 7. BẢNG KHUYẾN MÃI (KHUYEN_MAI)
+CREATE TABLE Khuyen_Mai (
+    ma_khuyen_mai INT AUTO_INCREMENT PRIMARY KEY,
+    ma_giam_gia VARCHAR(50) UNIQUE NOT NULL,
+    phan_tram_giam DECIMAL(5, 2) NULL,
+    so_tien_giam DECIMAL(15, 2) NULL,
+    ngay_bat_dau DATETIME NOT NULL,
+    ngay_ket_thuc DATETIME NOT NULL,
+    gioi_han_su_dung INT DEFAULT 0 -- 0 là không giới hạn
+);
+
+-- 8. BẢNG ĐƠN HÀNG (DON_HANG)
+CREATE TABLE Don_Hang (
+    ma_don_hang INT AUTO_INCREMENT PRIMARY KEY,
+    ma_nguoi_dung INT NOT NULL,
+    ma_khuyen_mai INT NULL,
+    tong_tien DECIMAL(15, 2) NOT NULL,
+    trang_thai VARCHAR(50) DEFAULT 'ChoXacNhan', -- ChoXacNhan, DangXuLy, DangGiao, DaGiao, DaHuy
+    dia_chi_giao_hang VARCHAR(255) NOT NULL,
+    phuong_thuc_thanh_toan VARCHAR(50) NOT NULL,
+    ngay_dat_hang DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (ma_nguoi_dung) REFERENCES Nguoi_Dung(ma_nguoi_dung),
+    FOREIGN KEY (ma_khuyen_mai) REFERENCES Khuyen_Mai(ma_khuyen_mai)
+);
+
+-- 9. BẢNG CHI TIẾT ĐƠN HÀNG (CHI_TIET_DON_HANG)
+CREATE TABLE Chi_Tiet_Don_Hang (
+    ma_chi_tiet_don INT AUTO_INCREMENT PRIMARY KEY,
+    ma_don_hang INT NOT NULL,
+    ma_san_pham INT NOT NULL,
+    so_luong INT NOT NULL,
+    don_gia DECIMAL(15, 2) NOT NULL, -- Lưu giá tại thời điểm mua
+    FOREIGN KEY (ma_don_hang) REFERENCES Don_Hang(ma_don_hang),
+    FOREIGN KEY (ma_san_pham) REFERENCES San_Pham(ma_san_pham)
+);
+
+-- 10. BẢNG ĐÁNH GIÁ (DANH_GIA)
+CREATE TABLE Danh_Gia (
+    ma_danh_gia INT AUTO_INCREMENT PRIMARY KEY,
+    ma_nguoi_dung INT NOT NULL,
+    ma_san_pham INT NOT NULL,
+    so_sao TINYINT NOT NULL CHECK(so_sao >= 1 AND so_sao <= 5),
+    binh_luan TEXT,
+    ngay_danh_gia DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (ma_nguoi_dung) REFERENCES Nguoi_Dung(ma_nguoi_dung),
+    FOREIGN KEY (ma_san_pham) REFERENCES San_Pham(ma_san_pham)
+);
