@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import Products from './pages/Products';
@@ -10,15 +10,24 @@ import Orders from './pages/Orders';
 import Categories from './pages/Categories';
 import Blogs from './pages/Blogs';
 import BlogDetail from './pages/BlogDetail';
+import AdminDashboard from './pages/AdminDashboard';
 import { AuthProvider } from './context/AuthContext';
 import ScrollToTop from './components/ScrollToTop';
 
-function App() {
+const AppContent = () => {
+  const location = useLocation();
+  const isAdminPath = location.pathname.startsWith('/admin');
+
   return (
-    <Router>
-      <AuthProvider>
-        <ScrollToTop />
-        <Navbar />
+    <>
+      <ScrollToTop />
+      {!isAdminPath && <Navbar />}
+      {isAdminPath ? (
+        <Routes>
+          <Route path="/admin" element={<AdminDashboard />} />
+          {/* Add more admin routes here if needed */}
+        </Routes>
+      ) : (
         <main>
           <Routes>
             <Route path="/" element={<Home />} />
@@ -33,6 +42,16 @@ function App() {
             <Route path="/orders" element={<Orders />} />
           </Routes>
         </main>
+      )}
+    </>
+  );
+};
+
+function App() {
+  return (
+    <Router>
+      <AuthProvider>
+        <AppContent />
       </AuthProvider>
     </Router>
   );
