@@ -1,2 +1,0 @@
-ncvKudWsMDX2jYw1
-mongodb+srv://quangyeuhang3278_db_user:ncvKudWsMDX2jYw1@cluster0.sti4gp5.mongodb.net/?appName=Cluster0
